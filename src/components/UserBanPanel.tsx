@@ -29,12 +29,18 @@ function UserBanPanel({ apiUrl }: Props) {
 
   async function fetchBannedUsers() {
     try {
-      const res = await fetch(`${apiUrl}/admin/bans`);
+      const res = await fetch(`${apiUrl}/admin/bans-api`);
+      if (!res.ok) {
+        console.warn(`Bans endpoint returned ${res.status}`);
+        setBannedUsers([]);
+        return;
+      }
       const data = await res.json();
       setBannedUsers(data);
     } catch (error) {
       showNotification('error', 'Failed to fetch banned users');
       console.error('Fetch banned users failed:', error);
+      setBannedUsers([]);
     }
   }
 
@@ -46,7 +52,7 @@ function UserBanPanel({ apiUrl }: Props) {
 
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/bans`, {
+      const res = await fetch(`${apiUrl}/admin/ban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ author: author.trim() }),
@@ -71,7 +77,7 @@ function UserBanPanel({ apiUrl }: Props) {
   async function unbanUser(id: string, author: string) {
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/bans/${id}`, {
+      const res = await fetch(`${apiUrl}/admin/unban/${id}`, {
         method: 'DELETE',
       });
 
