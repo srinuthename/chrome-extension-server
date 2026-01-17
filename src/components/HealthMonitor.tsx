@@ -1,4 +1,5 @@
-import { Activity, Database, Wifi, Clock } from 'lucide-react';
+import { Activity, Database, Wifi, Clock, RotateCcw, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 interface HealthData {
   status: string;
@@ -12,7 +13,31 @@ interface Props {
   apiUrl: string;
 }
 
-function HealthMonitor({ health }: Props) {
+function HealthMonitor({ health, apiUrl }: Props) {
+  const [isRestarting, setIsRestarting] = useState(false);
+  const [restartNotification, setRestartNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleRestart = async () => {
+    setIsRestarting(true);
+    try {
+      const res = await fetch(`${apiUrl}/admin/restart`, {
+        method: 'POST',
+      });
+
+      if (res.ok) {
+        setRestartNotification({ type: 'success', message: 'Server restart initiated' });
+        setTimeout(() => setRestartNotification(null), 3000);
+      } else {
+        setRestartNotification({ type: 'error', message: 'Failed to restart server' });
+      }
+    } catch (error) {
+      setRestartNotification({ type: 'error', message: 'Network error during restart' });
+      console.error('Restart failed:', error);
+    } finally {
+      setIsRestarting(false);
+    }
+  };
+
   if (!health) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
@@ -64,7 +89,30 @@ function HealthMonitor({ health }: Props) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">System Health</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-slate-900">System Health</h2>
+        <button
+          onClick={handleRestart}
+          disabled={isRestarting}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 text-white rounded-lg transition-colors font-medium disabled:cursor-not-allowed"
+        >
+          <RotateCcw className={`w-4 h-4 ${isRestarting ? 'animate-spin' : ''}`} />
+          <span className="text-sm">{isRestarting ? 'Restarting...' : 'Restart Server'}</span>
+        </button>
+      </div>
+
+      {restartNotification && (
+        <div className={`mb-6 p-4 rounded-lg border ${
+          restartNotification.type === 'success'
+            ? 'bg-green-50 border-green-200 text-green-800'
+            : 'bg-red-50 border-red-200 text-red-800'
+        }`}>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">{restartNotification.message}</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (

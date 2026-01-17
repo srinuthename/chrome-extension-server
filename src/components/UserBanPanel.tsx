@@ -50,12 +50,17 @@ function UserBanPanel({ apiUrl }: Props) {
       return;
     }
 
+    let username = author.trim();
+    if (!username.startsWith('@')) {
+      username = '@' + username;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`${apiUrl}/admin/ban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author: author.trim() }),
+        body: JSON.stringify({ author: username }),
       });
 
       if (res.ok) {
@@ -134,7 +139,7 @@ function UserBanPanel({ apiUrl }: Props) {
             value={newUserName}
             onChange={(e) => setNewUserName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && banUser(newUserName)}
-            placeholder="Enter username to ban"
+            placeholder="username (or @username)"
             className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             disabled={loading}
           />
