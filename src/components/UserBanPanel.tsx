@@ -74,11 +74,13 @@ function UserBanPanel({ apiUrl }: Props) {
     }
   }
 
-  async function unbanUser(id: string, author: string) {
+  async function unbanUser(_id: string, author: string) {
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/unban/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(`${apiUrl}/admin/unban`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author }),
       });
 
       if (res.ok) {
