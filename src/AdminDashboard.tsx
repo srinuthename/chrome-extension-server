@@ -61,10 +61,16 @@ function AdminDashboard() {
   async function fetchMetrics() {
     try {
       const res = await fetch(`${API_URL}/metrics`);
+      if (!res.ok) {
+        console.warn(`Metrics endpoint returned ${res.status}`);
+        setMetrics({});
+        return;
+      }
       const data = await res.json();
       setMetrics(data);
     } catch (error) {
       console.error('Metrics fetch failed:', error);
+      setMetrics({});
     }
   }
 
